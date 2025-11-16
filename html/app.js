@@ -66,9 +66,19 @@
             // 6.1. อัปเดต Header & Stats
             bankNameEl.textContent = currentConfig.banks[currentBankName]?.name || currentBankName;
             welcomeEl.textContent = currentTranslations.welcome;
-            moneyEl.textContent = "$" + (bankInfo.money ? bankInfo.money.toFixed(2) : "0.00");
-            goldEl.textContent = (bankInfo.gold ? bankInfo.gold : "0") + " oz";
-            slotsEl.textContent = `${bankInfo.invspace} Slots`;
+
+            // --- [แก้ไข] จัดรูปแบบตัวเลข (แบบไม่มีทศนิยม) ---
+            // ใช้ Math.floor() เพื่อปัดเศษทศนิยมทิ้งก่อน
+            const money = Math.floor(bankInfo.money ? Number(bankInfo.money) : 0);
+            const gold = Math.floor(bankInfo.gold ? Number(bankInfo.gold) : 0);
+            const slots = Math.floor(bankInfo.invspace ? Number(bankInfo.invspace) : 0);
+
+            // toLocaleString('en-US') จะเพิ่ม comma (เช่น 10000 -> 10,000)
+            // เราไม่ใส่ option ทศนิยมแล้ว
+            moneyEl.textContent = "$" + money.toLocaleString('en-US');
+            goldEl.textContent = gold.toLocaleString('en-US');
+            slotsEl.textContent = `${slots.toLocaleString('en-US')} ช่อง`;
+            // --- จบส่วนแก้ไข ---
 
             // 6.2. ซ่อน/แสดง แท็บ ตาม Config
             document.querySelector('[data-tab="gold"]').style.display = currentConfig.GlobalGold ? "flex" : "none";
@@ -76,7 +86,6 @@
             document.querySelector('[data-tab="storage"]').style.display = showStorage ? "flex" : "none";
             
             // [แก้ไข] ซ่อนแท็บ "โอน" (เพราะเราใช้ Global Bank)
-            // (ถ้าคุณยังต้องการใช้ระบบโอนเงิน ให้เปลี่ยน "none" เป็น "flex" ครับ)
             document.querySelector('[data-tab="transfer"]').style.display = "none"; 
 
             // 6.3. ซ่อน/แสดง ปุ่มในแท็บ "ตู้เซฟ"

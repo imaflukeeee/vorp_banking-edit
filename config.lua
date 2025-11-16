@@ -25,8 +25,8 @@ Config.GlobalGold = true           -- เปิด/ปิด การฝาก-
 Config.GlobalItems = true          -- เปิด/ปิด ระบบเซฟบ็อกซ์ (ส่วนกลาง)
 Config.GlobalUpgrade = true        -- เปิด/ปิด การอัปเกรดช่อง (ส่วนกลาง)
 Config.GlobalCanStoreWeapons = true  -- เปิด/ปิด การเก็บอาวุธ (ส่วนกลาง)
-Config.GlobalCostSlot = 10         -- ราคาอัปเกรด (ส่วนกลาง)
-Config.GlobalMaxSlots = 100        -- จำนวนช่องสูงสุด (ส่วนกลาง)
+Config.GlobalCostSlot = 100         -- ราคาอัปเกรด (ส่วนกลาง)
+Config.GlobalMaxSlots = 1000        -- จำนวนช่องสูงสุด (ส่วนกลาง)
 
 Config.banks              = {
 

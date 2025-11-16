@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Pridi:wght@300;400;500&display=swap" rel="stylesheet">
     
-    <!-- [เพิ่ม] Font Awesome สำหรับ Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,10 +14,8 @@
             <p id="bank-welcome">ยินดีต้อนรับ</p>
         </div>
 
-        <!-- [แก้ไข] อัปเกรด Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <!-- [แก้ไข] เปลี่ยนจาก <i...> เป็น <img...> -->
                 <img src="./img/money.png" class="stat-icon" alt="Money">
                 <div class="stat-info">
                     <label>ยอดเงินสดในบัญชี</label>
@@ -28,7 +23,6 @@
                 </div>
             </div>
             <div class="stat-card">
-                <!-- [แก้ไข] เปลี่ยนจาก <i...> เป็น <img...> -->
                 <img src="./img/gold.png" class="stat-icon" alt="Gold">
                 <div class="stat-info">
                     <label>ยอดทองในบัญชี</label>
@@ -36,7 +30,6 @@
                 </div>
             </div>
             <div class="stat-card">
-                <!-- [แก้ไข] เปลี่ยนจาก <i...> เป็น <img...> -->
                 <img src="./img/safe.png" class="stat-icon" alt="Safe">
                 <div class="stat-info">
                     <label>ช่องเก็บของ</label>
@@ -45,78 +38,61 @@
             </div>
         </div>
 
-        <!-- [แก้ไข] อัปเกรด Tabs (นำประวัติออก) -->
         <div class="tab-system">
             <div class="tab-headers">
-                <button class="tab-btn active" data-tab="cash"><i class="icon fas fa-dollar-sign"></i>เงินสด</button>
-                <button class="tab-btn" data-tab="gold"><i class="icon fas fa-coins"></i>ทอง</button>
-                <button class="tab-btn" data-tab="storage"><i class="icon fas fa-archive"></i>ตู้เซฟ</button>
-                <button class="tab-btn" data-tab="transfer"><i class="icon fas fa-exchange-alt"></i>โอน</button>
-                <!-- [ลบ] แท็บประวัติ
-                <button class="tab-btn" data-tab="history"><i class="icon fas fa-history"></i>ประวัติ</button>
-                -->
+                <button class="tab-btn active" data-tab="cash">เงินสด</button>
+                <button class="tab-btn" data-tab="gold">ทอง</button>
+                <button class="tab-btn" data-tab="storage">ตู้เซฟ</button>
+                <button class="tab-btn" data-tab="transfer">โอน</button>
             </div>
 
-            <!-- [แก้ไข] อัปเกรดดีไซน์แท็บเงินสด -->
             <div class="tab-content active" id="tab-cash">
                 <div class="action-grid">
                     <div class="action-card">
-                        <h4><i class="icon fas fa-arrow-up"></i> ฝากเงินสด</h4>
-                        <p>ฝากเงินสดจากในตัวเข้าบัญชี (หน้าต่างกรอกจำนวนเงินจะเด้งขึ้นมา)</p>
+                        <h4>ฝากเงินสด</h4> <p>ฝากเงินสดจากในตัวเข้าบัญชี</p>
                         <button id="btn-deposit-cash" class="btn-primary">เริ่มฝาก</button>
                     </div>
                     <div class="action-card">
-                        <h4><i class="icon fas fa-arrow-down"></i> ถอนเงินสด</h4>
-                        <p>ถอนเงินสดจากบัญชีเข้าในตัว (หน้าต่างกรอกจำนวนเงินจะเด้งขึ้นมา)</p>
+                        <h4>ถอนเงินสด</h4> <p>ถอนเงินสดจากบัญชีเข้าในตัว</p>
                         <button id="btn-withdraw-cash" class="btn-primary">เริ่มถอน</button>
                     </div>
                 </div>
             </div>
 
-            <!-- [แก้ไข] อัปเกรดดีไซน์แท็บทอง -->
             <div class="tab-content" id="tab-gold">
                 <div class="action-grid">
                     <div class="action-card">
-                        <h4><i class="icon fas fa-arrow-up"></i> ฝากทอง</h4>
-                        <p>ฝากทองจากในตัวเข้าบัญชี (หน้าต่างกรอกจำนวนเงินจะเด้งขึ้นมา)</p>
+                        <h4>ฝากทอง</h4> <p>ฝากทองจากในตัวเข้าบัญชี</p>
                         <button id="btn-deposit-gold" class="btn-primary">เริ่มฝาก</button>
                     </div>
                     <div class="action-card">
-                        <h4><i class="icon fas fa-arrow-down"></i> ถอนทอง</h4>
-                        <p>ถอนทองจากบัญชีเข้าในตัว (หน้าต่างกรอกจำนวนเงินจะเด้งขึ้นมา)</p>
+                        <h4>ถอนทอง</h4> <p>ถอนทองจากบัญชีเข้าในตัว</p>
                         <button id="btn-withdraw-gold" class="btn-primary">เริ่มถอน</button>
                     </div>
                 </div>
             </div>
 
-            <!-- [แก้ไข] อัปเกรดดีไซน์แท็บตู้เซฟ -->
             <div class="tab-content" id="tab-storage">
                 <div class="action-grid">
                     <div class="action-card">
-                        <h4><i class="icon fas fa-box-open"></i> เปิดตู้เซฟ</h4>
-                        <p>เปิดช่องเก็บของส่วนตัวในธนาคาร</p>
+                        <h4>เปิดตู้เซฟ</h4> <p>เปิดช่องเก็บของส่วนตัวในธนาคาร</p>
                         <button id="btn-open-storage" class="btn-primary">เปิดตู้เซฟ</button>
                     </div>
                     <div class="action-card">
-                        <h4><i class="icon fas fa-plus-circle"></i> อัปเกรดตู้เซฟ</h4>
-                        <p>ซื้อช่องเก็บของเพิ่ม (หน้าต่างกรอกจำนวนจะเด้งขึ้นมา)</p>
+                        <h4>อัปเกรดตู้เซฟ</h4> <p>ซื้อช่องเก็บของเพิ่ม (สูงสุด 1000 ช่อง)</p>
                         <button id="btn-upgrade-storage" class="btn-primary">อัปเกรด</button>
                     </div>
                 </div>
             </div>
 
-            <!-- แท็บโอนเงิน (คงเดิม) -->
             <div class="tab-content" id="tab-transfer">
-                <h4><i class="icon fas fa-exchange-alt"></i>โอนเงิน</h4>
-                <p>เลือกธนาคารปลายทาง (หน้าต่างกรอกจำนวนเงินจะเด้งขึ้นมา)</p>
+                <h4>โอนเงิน</h4> <p>เลือกธนาคารปลายทาง</p>
                 <div class="form-group">
                     <label for="transfer-bank-select">โอนไปธนาคาร:</label>
                     <select id="transfer-bank-select" class="select-field">
-                        <!-- Javascript จะเติมตัวเลือกที่นี่ -->
-                    </select>
+                        </select>
                 </div>
-                <button id="btn-transfer-confirm" class="btn-primary"><i class="icon fas fa-check"></i>ยืนยันการโอน</button>
-            </div>
+                <button id="btn-transfer-confirm" class="btn-primary">ยืนยันการโอน</button> </div>
             
         </div>
     </div>

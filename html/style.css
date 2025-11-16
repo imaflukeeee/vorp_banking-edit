@@ -1,5 +1,6 @@
 /* * Modern Dark Mode / Glassmorphism
- * อัปเกรด v2.1: เพิ่ม Icons และปรับปรุง Dashboard (นำ History ออก)
+ * อัปเกรด v2.1: ลบ Font Awesome Icons
+ * ปรับปรุง v2.2: เพิ่มระยะห่าง (Spacing) ให้อ่านง่ายขึ้น
  */
 
 :root {
@@ -34,21 +35,9 @@ body {
   user-select: none;
 }
 
-/* --- Icon Style --- */
-.icon {
-    margin-right: 8px;
-    font-size: 0.9em;
-    color: var(--text-dim);
-}
-.tab-btn .icon {
-    font-size: 1em;
-}
-.btn-primary .icon {
-    color: var(--text-main);
-}
-.btn-primary:hover .icon {
-    color: var(--bg-dark);
-}
+/* --- [ลบ] Icon Style --- */
+/* (ส่วนสไตล์ .icon ถูกลบออกทั้งหมด) */
+
 
 /* สไตล์สำหรับไอคอน PNG ของคุณ (money, gold, safe) */
 .stat-icon {
@@ -69,10 +58,10 @@ body {
   background: var(--bg-glass);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: 20px;
+  padding: 25px; /* [ปรับแก้] เพิ่มระยะห่างขอบหน้าต่าง */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px; /* [ปรับแก้] เพิ่มช่องว่างระหว่าง Header, Stats, Tabs */
 }
 
 /* --- Header --- */
@@ -81,7 +70,7 @@ body {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 15px;
 }
-.bank-header h2 { font-size: 24px; font-weight: 500; color: var(--primary-accent); }
+.bank-header h2 { font-size: 36px; font-weight: 500; color: var(--primary-accent); }
 .bank-header p { font-size: 16px; color: var(--text-dim); }
 
 /* --- Stats Grid (สำหรับ Icons) --- */
@@ -91,19 +80,15 @@ body {
   gap: 15px;
 }
 .stat-card {
-  background: var(--bg-card);
-  border: 1px solid transparent;
-  border-radius: 10px;
+  /* [ลบ] ลบกรอบและพื้นหลังออก (ตามคำขอก่อนหน้า) */
   padding: 15px;
   display: flex;
   align-items: center;
+  justify-content: center; /* [เพิ่ม] เพื่อให้เนื้อหาอยู่ตรงกลาง */
   gap: 15px;
-  transition: var(--transition);
 }
-.stat-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-color);
-}
+/* [ลบ] .stat-card:hover */
+
 .stat-info {
   display: flex;
   flex-direction: column;
@@ -125,14 +110,15 @@ body {
   flex-grow: 1;
   background: var(--bg-card);
   border-radius: 10px;
-  padding: 15px;
+  padding: 20px; /* [ปรับแก้] เพิ่มช่องว่างภายในกรอบแท็บ */
   overflow: hidden;
 }
 .tab-headers {
   display: flex;
+  justify-content: center;
   gap: 10px;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* [ปรับแก้] เพิ่มระยะห่างระหว่างปุ่มแท็บกับเนื้อหา */
 }
 .tab-btn {
   background: transparent;
@@ -155,9 +141,7 @@ body {
   color: var(--primary-accent);
   border-bottom-color: var(--primary-accent);
 }
-.tab-btn.active .icon {
-    color: var(--primary-accent);
-}
+/* [ลบ] .tab-btn.active .icon */
 
 /* --- Tab Content --- */
 .tab-content {
@@ -166,6 +150,7 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   padding-right: 5px;
+  padding-top: 10px; /* [ปรับแก้] เพิ่มช่องว่างด้านบนเนื้อหาแท็บ */
 }
 .tab-content.active {
   display: block;
@@ -183,10 +168,8 @@ body {
   display: flex;
   align-items: center;
 }
-.tab-content h4 .icon {
-    color: var(--text-main);
-    font-size: 1em;
-}
+/* [ลบ] .tab-content h4 .icon */
+
 .tab-content p {
   font-size: 14px;
   color: var(--text-dim);
@@ -200,13 +183,14 @@ body {
     gap: 15px;
 }
 .action-card {
-    background: var(--bg-dark);
+    background: var(--bg-card-hover); /* [แก้ไข] เปลี่ยนเป็นสีนี้ครับ */
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     transition: var(--transition);
+    min-height: 165px; 
 }
 .action-card:hover {
     border-color: var(--border-color-hover);
@@ -214,9 +198,8 @@ body {
 .action-card h4 {
     margin-bottom: 8px;
 }
-.action-card h4 .icon {
-    color: var(--primary-accent);
-}
+/* [ลบ] .action-card h4 .icon */
+
 .action-card p {
     flex-grow: 1; 
     margin-bottom: 15px;
@@ -247,9 +230,7 @@ body {
   border-color: var(--primary-accent);
   color: var(--bg-dark);
 }
-.btn-primary:hover .icon {
-    color: var(--bg-dark);
-}
+/* [ลบ] .btn-primary:hover .icon */
 
 .form-group {
   display: flex;
