@@ -4,8 +4,10 @@ local PromptGroup2 = GetRandomIntInRange(0, 0xffffff)
 local openmenu
 local CloseBanks
 local inmenu = false
+local currentBankName = nil -- [เพิ่ม] เก็บชื่อธนาคารที่เปิดอยู่
+local currentBankInfo = nil -- [เพิ่ม] เก็บข้อมูลธนาคารที่เปิดอยู่
 local T = Translation.Langs[Config.Lang]
-local MenuData = exports.vorp_menu:GetMenuData()
+-- local MenuData = exports.vorp_menu:GetMenuData() -- [ลบ] ไม่ใช้ vorp_menu
 
 AddEventHandler("onResourceStop", function(resourceName)
     if resourceName == GetCurrentResourceName() then
@@ -20,13 +22,15 @@ AddEventHandler("onResourceStop", function(resourceName)
             end
         end
         DisplayRadar(true)
-        MenuData.CloseAll()
+        -- MenuData.CloseAll() -- [ลบ]
+        SetNuiFocus(false, false) -- [เพิ่ม]
         inmenu = false
         ClearPedTasks(PlayerPedId())
     end
 end)
 
 ---------------- BLIPS ---------------------
+-- (ส่วนนี้เหมือนเดิม)
 local function AddBlip(index)
     if Config.banks[index].blipAllowed then
         local blip = BlipAddForCoords(1664425300, Config.banks[index].BankLocation.x, Config.banks[index].BankLocation.y, Config.banks[index].BankLocation.z)
@@ -38,6 +42,7 @@ local function AddBlip(index)
 end
 
 ---------------- NPC ---------------------
+-- (ส่วนนี้เหมือนเดิม)
 local function LoadModel(model)
     if not HasModelLoaded(model) then
         RequestModel(model, false)
@@ -61,6 +66,7 @@ local function SpawnNPC(index)
     Config.banks[index].NPC = npc
 end
 
+-- (ส่วน Prompt, getDistance, CreateNpcByDistance เหมือนเดิม)
 local function PromptSetUp()
     local str = T.openmenu
     openmenu = UiPromptRegisterBegin()
@@ -111,11 +117,12 @@ end
 
 local function GetBankInfo(bankConfig)
     local result = VORPcore.Callback.TriggerAwait("vorp_bank:getinfo", bankConfig.city)
-    Openbank(bankConfig.city, result[1], result[2])
+    Openbank(bankConfig.city, result[1], result[2]) -- [แก้ไข] bankConfig.city คือ bankName
     TaskStandStill(PlayerPedId(), -1)
     DisplayRadar(false)
 end
 
+-- (Main loop - CreateThread - เหมือนเดิม)
 CreateThread(function()
     repeat Wait(2000) until LocalPlayer.state.IsInSession
     PromptSetUp()
@@ -206,268 +213,257 @@ CreateThread(function()
     end
 end)
 
+-- [แก้ไข] ฟังก์ชัน CloseMenu()
 local function CloseMenu()
-    MenuData.CloseAll()
+    -- MenuData.CloseAll() -- [ลบ]
+    SendNUIMessage({ action = 'close' }) -- [เพิ่ม]
+    SetNuiFocus(false, false)            -- [เพิ่ม]
     inmenu = false
     ClearPedTasks(PlayerPedId())
     DisplayRadar(true)
+    currentBankName = nil -- [เพิ่ม]
+    currentBankInfo = nil -- [เพิ่ม]
 end
 
+-- [แก้ไข] ฟังก์ชัน Openbank()
 function Openbank(bankName, bankinfo, allbanks)
-    MenuData.CloseAll()
+    -- MenuData.CloseAll() -- [ลบ]
     if not bankinfo.money then
         CloseMenu()
         return
     end
 
-    local elements = {
-        { label = T.cashbalance .. bankinfo.money, value = 'nothing', desc = T.cashbalance2 },
-        { label = T.depocash,                      value = 'dcash',   desc = T.depocash2 },
-        { label = T.takecash,                      value = 'wcash',   desc = T.takecash2 }
+    -- [เพิ่ม] เก็บข้อมูลไว้ให้ NUI Callbacks ใช้
+    currentBankName = bankName
+    currentBankInfo = bankinfo
+
+    -- [เพิ่ม] ส่งข้อมูลไป NUI
+    SendNUIMessage({
+        action = 'open',
+        bankName = bankName,
+        bankInfo = bankinfo,
+        allBanks = allbanks,
+        config = Config, -- ส่ง Config ไปด้วย
+        translations = T -- ส่งภาษาไปด้วย
+    })
+
+    -- [เพิ่ม] เปิดเมาส์
+    SetNuiFocus(true, true)
+
+    -- [ลบ] ลบ MenuData.Open ทั้งหมด (บรรทัด 248-418)
+end
+
+-- [ลบ] ลบฟังก์ชัน Openallbanks(bankName, allbanks) ทั้งหมด (บรรทัด 420-456)
+-- (เราจะย้าย Logic นี้ไปไว้ใน NUI Callback 'transferMoney')
+
+-- ===================================================
+-- [เพิ่ม] NUI CALLBACKS (รับคำสั่งจาก UI ใหม่)
+-- ===================================================
+
+-- รับคำสั่งปิดจาก UI (เช่น กด ESC)
+RegisterNUICallback('close', function(data, cb)
+    CloseMenu()
+    cb('ok')
+end)
+
+-- รับคำสั่ง "ฝากเงิน"
+RegisterNUICallback('depositCash', function(data, cb)
+    -- (คัดลอก Logic 'dcash' จาก Openbank เดิมมาที่นี่)
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.confirmCash,
+        placeholder = T.inputsLang.insertAmountCash,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.depositCash,
+            type = "text",
+            pattern = "[0-9.]{1,10}",
+            title = T.inputsLang.numOnlyCash,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
     }
 
-    if Config.GlobalItems then
-        elements[#elements + 1] = {
-            label = T.depoitem,
-            value = 'bitem',
-            desc = T.depoitem2 .. bankinfo.invspace
-        }
-    end
-
-    if Config.GlobalUpgrade then
-        elements[#elements + 1] = {
-            label = T.upgradeitem,
-            value = 'upitem',
-            desc = T.upgradeitem2 .. Config.GlobalCostSlot -- ‼️ แก้ไขบรรทัดนี้ ‼️
-        }
-    end
-
-    if Config.GlobalGold then
-        elements[#elements + 1] = {
-            label = T.goldbalance .. bankinfo.gold,
-            value = 'nothing',
-            desc = T.cashbalance2
-        }
-        elements[#elements + 1] = {
-            label = T.depogold,
-            value = 'dgold',
-            desc = T.depogold2
-        }
-        elements[#elements + 1] = {
-            label = T.takegold,
-            value = 'wgold',
-            desc = T.takegold2
-        }
-    end
-
-
-    MenuData.Open('default', GetCurrentResourceName(), 'Openbank' .. bankName,
-        {
-            title    = bankName,
-            subtext  = T.welcome,
-            align    = 'top-left',
-            elements = elements,
-        },
-        function(data, _)
-            if (data.current.value == 'dcash') then
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.confirmCash,                                  -- button name
-                    placeholder = T.inputsLang.insertAmountCash,                        -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.depositCash,                         -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9.]{1,10}",                                       -- only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyCash,                               -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:depositcash", result, Config.banks[bankName].city, bankinfo)
-                        CloseMenu()
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-            if (data.current.value == 'dgold') then
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.confirmGold,                                  -- button name
-                    placeholder = T.inputsLang.insertAmountGold,                        -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.depositGold,                         -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9.]{1,10}",                                       -- only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyGold,                               -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:depositgold", result, Config.banks[bankName].city, bankinfo)
-                        CloseMenu()
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-            if (data.current.value == 'wcash') then
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.confirmCashW,                                 -- button name
-                    placeholder = T.inputsLang.insertAmountCashW,                       -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.withdrawCash,                        -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9.]{1,10}",                                       -- only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyCashW,                              -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:withcash", result, Config.banks[bankName].city, bankinfo)
-                        CloseMenu()
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-            if (data.current.value == 'wgold') then
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.confirmGoldW,                                 -- button name
-                    placeholder = T.inputsLang.insertAmountGoldW,                       -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.withdrawGold,                        -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9.]{1,10}",                                       -- only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyGoldW,                              -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:withgold", result, Config.banks[bankName].city, bankinfo)
-                        CloseMenu()
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-            if (data.current.value == 'bitem') then
-                if bankinfo.invspace > 0 then
-                    TriggerServerEvent("vorp_banking:server:OpenBankInventory", bankName)
-                    CloseMenu()
-                else
-                    VORPcore.NotifyRightTip(" you need to buy slots first", 4000)
-                end
-            end
-
-            if (data.current.value == 'upitem') then
-                local invspace = bankinfo.invspace
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.confirmUp,                                    -- button name
-                    placeholder = T.inputsLang.insertAmountUp,                          -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.upgradeSlots,                        -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9]{1,10}",                                        --  only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyUp,                                 -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:UpgradeSafeBox", math.floor(result), invspace, bankName)
-                        CloseMenu()
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-            if (data.current.value == 'others') then
-                Openallbanks(bankName, allbanks)
-            end
-        end,
-        function()
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            TriggerServerEvent("vorp_bank:depositcash", result, Config.banks[currentBankName].city, currentBankInfo)
             CloseMenu()
-        end)
-end
-
-function Openallbanks(bankName, allbanks)
-    MenuData.CloseAll()
-    local elements = {}
-
-    for _, bank in pairs(allbanks) do
-        if bankName ~= bank.name then
-            table.insert(elements,
-                {
-                    label = bank.name .. " : " .. bank.money .. "$",
-                    value = 'transfer',
-                    desc = T.transferinfo,
-                    info = bank.name
-                })
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
         end
+    end)
+    cb('ok')
+end)
+
+-- รับคำสั่ง "ฝากทอง"
+RegisterNUICallback('depositGold', function(data, cb)
+    -- (คัดลอก Logic 'dgold' จาก Openbank เดิมมาที่นี่)
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.confirmGold,
+        placeholder = T.inputsLang.insertAmountGold,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.depositGold,
+            type = "text",
+            pattern = "[0-9.]{1,10}",
+            title = T.inputsLang.numOnlyGold,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
+    }
+
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            TriggerServerEvent("vorp_bank:depositgold", result, Config.banks[currentBankName].city, currentBankInfo)
+            CloseMenu()
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
+        end
+    end)
+    cb('ok')
+end)
+
+-- รับคำสั่ง "ถอนเงิน"
+RegisterNUICallback('withdrawCash', function(data, cb)
+    -- (คัดลอก Logic 'wcash' จาก Openbank เดิมมาที่นี่)
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.confirmCashW,
+        placeholder = T.inputsLang.insertAmountCashW,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.withdrawCash,
+            type = "text",
+            pattern = "[0-9.]{1,10}",
+            title = T.inputsLang.numOnlyCashW,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
+    }
+
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            TriggerServerEvent("vorp_bank:withcash", result, Config.banks[currentBankName].city, currentBankInfo)
+            CloseMenu()
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
+        end
+    end)
+    cb('ok')
+end)
+
+-- รับคำสั่ง "ถอนทอง"
+RegisterNUICallback('withdrawGold', function(data, cb)
+    -- (คัดลอก Logic 'wgold' จาก Openbank เดิมมาที่นี่)
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.confirmGoldW,
+        placeholder = T.inputsLang.insertAmountGoldW,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.withdrawGold,
+            type = "text",
+            pattern = "[0-9.]{1,10}",
+            title = T.inputsLang.numOnlyGoldW,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
+    }
+
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            TriggerServerEvent("vorp_bank:withgold", result, Config.banks[currentBankName].city, currentBankInfo)
+            CloseMenu()
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
+        end
+    end)
+    cb('ok')
+end)
+
+-- รับคำสั่ง "เปิดตู้เซฟ"
+RegisterNUICallback('openStorage', function(data, cb)
+    -- (คัดลอก Logic 'bitem' จาก Openbank เดิมมาที่นี่)
+    if currentBankInfo.invspace > 0 then
+        TriggerServerEvent("vorp_banking:server:OpenBankInventory", currentBankName)
+        CloseMenu()
+    else
+        VORPcore.NotifyRightTip(" you need to buy slots first", 4000)
+    end
+    cb('ok')
+end)
+
+-- รับคำสั่ง "อัปเกรดตู้เซฟ"
+RegisterNUICallback('upgradeStorage', function(data, cb)
+    -- (คัดลอก Logic 'upitem' จาก Openbank เดิมมาที่นี่)
+    local invspace = currentBankInfo.invspace
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.confirmUp,
+        placeholder = T.inputsLang.insertAmountUp,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.upgradeSlots,
+            type = "text",
+            pattern = "[0-9]{1,10}",
+            title = T.inputsLang.numOnlyUp,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
+    }
+
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            TriggerServerEvent("vorp_bank:UpgradeSafeBox", math.floor(result), invspace, currentBankName)
+            CloseMenu()
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
+        end
+    end)
+    cb('ok')
+end)
+
+-- รับคำสั่ง "โอนเงิน"
+RegisterNUICallback('transferMoney', function(data, cb)
+    -- (คัดลอก Logic 'transfer' จาก Openallbanks เดิมมาที่นี่)
+    -- 'data' ที่ส่งมาจาก JS จะมี 'targetBankName'
+    local targetBank = data.targetBankName
+    if not targetBank then
+        print("vorp_banking: NUI did not send targetBankName")
+        cb('error')
+        return
     end
 
-    MenuData.Open('default', GetCurrentResourceName(), 'Openallbanks' .. bankName,
-        {
-            title    = bankName,
-            subtext  = T.welcome,
-            align    = 'top-left',
-            elements = elements,
-        },
-        function(data, _)
-            if (data.current.value == 'transfer') then
-                local myInput = {
-                    type = "enableinput",                                               -- don't touch
-                    inputType = "input",                                                -- input type
-                    button = T.inputsLang.Transfer,                                     -- button name
-                    placeholder = T.inputsLang.insertAmountCash,                        -- placeholder name
-                    style = "block",                                                    -- don't touch
-                    attributes = {
-                        inputHeader = T.inputsLang.depositTransfer,                     -- header
-                        type = "text",                                                  -- inputype text, number,date,textarea
-                        pattern = "[0-9.]{1,10}",                                       -- only numbers "[0-9]" | for letters only "[A-Za-z]+"
-                        title = T.inputsLang.numOnlyCash,                               -- if input doesnt match show this message
-                        style = "border-radius: 10px; background-color: ; border:none;" -- style
-                    }
-                }
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb)
-                    local result = tonumber(cb)
-                    if result ~= nil and result > 0 then
-                        TriggerServerEvent("vorp_bank:transfer", result, data.current.info, bankName)
-                    else
-                        VORPcore.NotifyRightTip(T.invalid, 4000)
-                    end
-                end)
-            end
-        end,
-        function()
-            Openbank(bankName, allbanks)
-        end)
-end
+    local myInput = {
+        type = "enableinput",
+        inputType = "input",
+        button = T.inputsLang.Transfer,
+        placeholder = T.inputsLang.insertAmountCash,
+        style = "block",
+        attributes = {
+            inputHeader = T.inputsLang.depositTransfer,
+            type = "text",
+            pattern = "[0-9.]{1,10}",
+            title = T.inputsLang.numOnlyCash,
+            style = "border-radius: 10px; background-color: ; border:none;"
+        }
+    }
+    TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(cb_input)
+        local result = tonumber(cb_input)
+        if result ~= nil and result > 0 then
+            -- data.current.info ถูกแทนที่ด้วย targetBank
+            -- bankName ถูกแทนที่ด้วย currentBankName
+            TriggerServerEvent("vorp_bank:transfer", result, targetBank, currentBankName)
+            CloseMenu() -- [เพิ่ม] ปิดเมนูหลังโอน
+        else
+            VORPcore.NotifyRightTip(T.invalid, 4000)
+        end
+    end)
+    cb('ok')
+end)

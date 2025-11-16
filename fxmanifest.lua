@@ -7,6 +7,8 @@ author '@outsider | Inital Author : RobiZona#0001'
 description 'Bank system VORP'
 lua54 'yes'
 
+ui_page 'html/ui.html'
+
 shared_scripts {
     'shared/language.lua',
     'config.lua'
@@ -19,7 +21,16 @@ client_scripts {
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/services.lua',
-    'server/server.lua',
+    'server/server.lua'
+}
+
+files {
+    'html/ui.html',
+    'html/style.css',
+    'html/app.js',
+    'html/img/money.png', -- [เพิ่ม] ไอคอนเงิน
+    'html/img/gold.png',  -- [เพิ่ม] ไอคอนทอง
+    'html/img/safe.png'   -- [เพิ่ม] ไอคอนตู้เซฟ
 }
 
 --dont touch

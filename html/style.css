@@ -1,0 +1,285 @@
+/* * Modern Dark Mode / Glassmorphism
+ * อัปเกรด v2.1: เพิ่ม Icons และปรับปรุง Dashboard (นำ History ออก)
+ */
+
+:root {
+  --font-main: "Pridi", serif;
+  --bg-glass: rgba(20, 20, 20, 0.92);
+  --bg-dark: #0A0A0A;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color-hover: rgba(255, 255, 255, 0.4);
+  --text-main: #f0f0f0;
+  --text-dim: #999;
+  --text-muted: #666;
+  --primary-accent: #ffffff;
+  --transition: 0.2s ease-in-out;
+  --border-radius: 12px;
+}
+
+/* --- Global Reset --- */
+* {
+  font-family: var(--font-main) !important;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: var(--text-main);
+}
+
+body {
+  background-color: transparent;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* --- Icon Style --- */
+.icon {
+    margin-right: 8px;
+    font-size: 0.9em;
+    color: var(--text-dim);
+}
+.tab-btn .icon {
+    font-size: 1em;
+}
+.btn-primary .icon {
+    color: var(--text-main);
+}
+.btn-primary:hover .icon {
+    color: var(--bg-dark);
+}
+
+/* สไตล์สำหรับไอคอน PNG ของคุณ (money, gold, safe) */
+.stat-icon {
+    width: 32px;  /* กำหนดขนาด */
+    height: 32px; /* กำหนดขนาด */
+    filter: invert(1); /* ทำให้รูป PNG สีดำกลายเป็นสีขาว */
+    opacity: 0.9;
+}
+
+/* --- Main Window --- */
+.bank-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  min-height: 500px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- Header --- */
+.bank-header {
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+}
+.bank-header h2 { font-size: 24px; font-weight: 500; color: var(--primary-accent); }
+.bank-header p { font-size: 16px; color: var(--text-dim); }
+
+/* --- Stats Grid (สำหรับ Icons) --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: var(--transition);
+}
+.stat-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color);
+}
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat-card label {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.stat-card span {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+/* --- Tab System --- */
+.tab-system {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 15px;
+  overflow: hidden;
+}
+.tab-headers {
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 15px;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+}
+.tab-btn:hover {
+  color: var(--text-main);
+}
+.tab-btn.active {
+  color: var(--primary-accent);
+  border-bottom-color: var(--primary-accent);
+}
+.tab-btn.active .icon {
+    color: var(--primary-accent);
+}
+
+/* --- Tab Content --- */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.tab-content.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+.tab-content h4 .icon {
+    color: var(--text-main);
+    font-size: 1em;
+}
+.tab-content p {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+/* --- Action Card (ดีไซน์ Dashboard ใหม่) --- */
+.action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.action-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+.action-card:hover {
+    border-color: var(--border-color-hover);
+}
+.action-card h4 {
+    margin-bottom: 8px;
+}
+.action-card h4 .icon {
+    color: var(--primary-accent);
+}
+.action-card p {
+    flex-grow: 1; 
+    margin-bottom: 15px;
+}
+.action-card .btn-primary {
+    margin-bottom: 0;
+}
+
+/* --- Buttons & Forms (สำหรับแท็บโอน) --- */
+.btn-primary {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  margin-bottom: 10px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-primary:hover {
+  background: var(--primary-accent);
+  border-color: var(--primary-accent);
+  color: var(--bg-dark);
+}
+.btn-primary:hover .icon {
+    color: var(--bg-dark);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.tab-content label {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.select-field {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  color: var(--text-main);
+  width: 100%;
+  transition: var(--transition);
+  appearance: none;
+}
+.select-field:focus {
+  outline: none;
+  border-color: var(--border-color-hover);
+}
+
+/* --- Scrollbar --- */
+.tab-content::-webkit-scrollbar { width: 6px; }
+.tab-content::-webkit-scrollbar-track { background: transparent; }
+.tab-content::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; }
+.tab-content::-webkit-scrollbar-thumb:hover { background-color: var(--border-color-hover); }
